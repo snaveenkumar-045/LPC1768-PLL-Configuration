@@ -1,0 +1,56 @@
+#include"lpc17xx.h"
+
+#define MAIN_OSC  (1<<5)
+#define MAIN_OSC_R  (1<<4)
+#define PLL_EN 1
+#define MAIN_STABLE (1<<6)
+#define PLL_LCK (1<<26)
+#define PLL_CON (1<<1)
+void delay()
+{
+	unsigned int i,j;
+	for(i = 0;i<500;i++)
+	{
+		for(j=0;j<1000;j++);
+	}
+}
+void PLL_96MHz(void)
+{
+	LPC_SC->SCS = MAIN_OSC | MAIN_OSC_R;
+	LPC_SC->PLL0CON = 0;
+	LPC_SC->PLL0FEED = 0xAA;
+	LPC_SC->PLL0FEED = 0x55;
+	while(!(LPC_SC->SCS & MAIN_STABLE));
+	LPC_SC->CLKSRCSEL = 1; 
+	LPC_SC->CCLKCFG	 =3; //x
+	LPC_SC->PLL0CFG = 47;// m
+	LPC_SC->PLL0CON = PLL_EN;
+	LPC_SC->PLL0FEED = 0xAA;
+	LPC_SC->PLL0FEED = 0x55;
+	while(!(LPC_SC->PLL0STAT & PLL_LCK));
+	LPC_SC->PLL0CON = PLL_EN |(1<<1);
+	LPC_SC->PLL0FEED = 0xAA;
+	LPC_SC->PLL0FEED = 0x55;
+}
+
+			 
+
+int main()
+{
+int count =0;
+	LPC_GPIO1->FIODIR |= (0XFF << 19);
+
+	while(1)
+	{
+		LPC_GPIO1->FIOSET |= (0XFF << 19);
+		delay();
+		LPC_GPIO1->FIOCLR |= (0XFF << 19);
+		delay();
+
+		if(count == 10)
+		{
+			PLL_96MHz();			 
+		}			
+			count++;
+	}
+}
