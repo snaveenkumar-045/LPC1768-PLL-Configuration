@@ -35,7 +35,6 @@ LED blinking is used to verify the change in processor clock frequency.
 ```
 pll1.c
 images/
-docs/
 videos/
 ```
 
